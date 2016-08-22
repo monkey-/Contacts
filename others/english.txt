@@ -89,3 +89,4 @@ parameter参数
 issue problem publish
 degraded 被降级 降级 退化 贬低
 middleware中间件
+steady 稳定的 不断的
