@@ -1,7 +1,7 @@
 (Inter-Process Communication)?IPC
-interpreted   v. ??;??(interpret???????);??
+interpreted   v.ç†è§£ è§£é‡Š
 
-essentially  ??
+essentially  æœ¬è´¨ä¸Šçš„
 rectnative
 
 DCC Document control center
@@ -10,83 +10,89 @@ DCC Document control center
 The Java Virtual Machine Specification   Java?????
 MCU Microcontroller Unit
 
-infrastructure »ù´¡ÉèÊ© 
-cluster ´Ô ´Ø   flower»¨
-highlight Ç¿µ÷
-grant ÊÚÓè »ñ×¼
-revoke ³·Ïú
-assess ÆÀ¹À
-standby ´ıÃü
-doze »èË¯
-optimization   ×îÓÅµÄ
-periodically ÖÜÆÚĞÔµÄ
-deem¾ö¶¨
-minimize Ê¹¡£¡£×îĞ¡ ËõĞ¡
-expose±©Â¶
-vulnerability Èõµã
-distro ·¢²¼°æ±¾
-Likewise Í¬ÑùµÄ
-evicted ÇıÖğ
-simultaneously Í¬Ê±µÄ
-detect¼ì²â
-privilege ÌØÈ¨
-restriction ÏŞÖÆ
-essential ±¾ÖÊµÄ ±ØĞëµÄ
-evolve ½ø»¯ Ñİ»¯
-appropriately Ç¡µ±µÄ
-instruction  Ö¸Ê¾ ËµÃ÷
-proneÇãÏòÓÚ ÓĞÇãÏòµÄ
+infrastructure åŸºç¡€è®¾æ–½ 
+cluster ä¸› ç°‡   flowerèŠ±
+highlight å¼ºè°ƒ
+grant æˆäºˆ è·å‡†
+revoke æ’¤é”€
+assess è¯„ä¼°
+standby å¾…å‘½
+doze æ˜ç¡
+optimization   æœ€ä¼˜çš„
+periodically å‘¨æœŸæ€§çš„
+deemå†³å®š
+minimize ä½¿ã€‚ã€‚æœ€å° ç¼©å°
+exposeæš´éœ²
+vulnerability å¼±ç‚¹
+distro å‘å¸ƒç‰ˆæœ¬
+Likewise åŒæ ·çš„
+evicted é©±é€
+simultaneously åŒæ—¶çš„
+detectæ£€æµ‹
+privilege ç‰¹æƒ
+restriction é™åˆ¶
+essential æœ¬è´¨çš„ å¿…é¡»çš„
+evolve è¿›åŒ– æ¼”åŒ–
+appropriately æ°å½“çš„
+instruction  æŒ‡ç¤º è¯´æ˜
+proneå€¾å‘äº æœ‰å€¾å‘çš„
  Integrated Development Environment (IDE). 
-block structure ³ÌĞò¿é½á¹¹
-bump Åö×²
-substitute Ìæ»»µÄ
-eligible ·ûºÏÌõ¼şµÄ ÓĞ×Ê¸ñµÄ
-precede¾ÓÓÚÖ®Ç°
-internally ±¾ÖÊµÄ
-concatenate Áª½Ó ´®Áª
-manifest Ö¤Ã÷ ÏÔÊ¾ Çåµ¥
-meta Ôª
-compliant ÊÊÓÃ Ë³Ó¦
-relevant Ïà¹ØĞÔ
-boilerplate Ä£°åÎÄ¼ş
-trivial ²»ÖØÒªµÄ ËöËéµÄ
-isolation  ¸ôÀë
-approach ·½·¨ ½Ó½ü
-odometry ²â¾à
-exhibit Õ¹ÀÀ
-roll×ª¶¯
-pitch ¸ß¶È
-leverage ÀûÓÃ
-maintained Î¬»¤µÄ
-axis Öá
-Threshold ÃÅ¼÷ ãĞÖµ
-thresh ÍÆÇÃ ÇÃ´ò ·´¸´×ö
-occupy ÒÑÊ¹ÓÃ ÒÑÕ¼ÓÃ
-trajtory ¹ìµÀ ÏßÂ·
-compliant ÊÊÓ¦ Ë³´Ó
-performÍê³É
-latch ×¥×¡ Õ¼ÓĞ
-potentialÇ±ÔÚµÄ
-rough ´Ö²ÚµÄ
-terrain µØĞÎ µØÊÆ
-pitch ÇãĞ± Í¶ÖÀ ¶¨Î»ÓÚ Á¤Çà Òô¸ß
-conevntion Ï°¹ß ¹ßÀı
-semantic ÓïÑÔÑ§µÄ
-REP¾àÀë¹ÀËã³ÌĞò
-intuition Ö±¾õ
-coordinate ×ø±ê Ğ­µ÷ Í¬µÈµÄ
-discreteÀëÉ¢µÄ
-INS¹ßĞÔµ¼º½ÏµÍ³
-optimizeÓÅ»¯ ³ÖÀÖ¹ÛÌ¬¶È
-Key abilities ¹Ø¼üÄÜÁ¦
-present ³öÏÖ Ìá³ö ÏÖÔÚµÄ µ±Ç°µÄ
-disasterÔÖÄÑ ÔÖ»ö
-an important area of research Ò»¸öÖØÒªµÄÑĞ¾¿ÁìÓò
-advance ÍÆ¶¯ Ç°½ø ÌáÇ°µÄ
-advanced ¸ß¼¶µÄ
-refactor ÖØ¹¹
-parameter²ÎÊı
+block structure ç¨‹åºå—ç»“æ„
+bump ç¢°æ’
+substitute æ›¿æ¢çš„
+eligible ç¬¦åˆæ¡ä»¶çš„ æœ‰èµ„æ ¼çš„
+precedeå±…äºä¹‹å‰
+internally æœ¬è´¨çš„
+concatenate è”æ¥ ä¸²è”
+manifest è¯æ˜ æ˜¾ç¤º æ¸…å•
+meta å…ƒ
+compliant é€‚ç”¨ é¡ºåº”
+relevant ç›¸å…³æ€§
+boilerplate æ¨¡æ¿æ–‡ä»¶
+trivial ä¸é‡è¦çš„ çç¢çš„
+isolation  éš”ç¦»
+approach æ–¹æ³• æ¥è¿‘
+odometry æµ‹è·
+exhibit å±•è§ˆ
+rollè½¬åŠ¨
+pitch é«˜åº¦
+leverage åˆ©ç”¨
+maintained ç»´æŠ¤çš„
+axis è½´
+Threshold é—¨æ§› é˜ˆå€¼
+thresh æ¨æ•² æ•²æ‰“ åå¤åš
+occupy å·²ä½¿ç”¨ å·²å ç”¨
+trajtory è½¨é“ çº¿è·¯
+compliant é€‚åº” é¡ºä»
+performå®Œæˆ
+latch æŠ“ä½ å æœ‰
+potentialæ½œåœ¨çš„
+rough ç²—ç³™çš„
+terrain åœ°å½¢ åœ°åŠ¿
+pitch å€¾æ–œ æŠ•æ· å®šä½äº æ²¥é’ éŸ³é«˜
+conevntion ä¹ æƒ¯ æƒ¯ä¾‹
+semantic è¯­è¨€å­¦çš„
+REPè·ç¦»ä¼°ç®—ç¨‹åº
+intuition ç›´è§‰
+coordinate åæ ‡ åè°ƒ åŒç­‰çš„
+discreteç¦»æ•£çš„
+INSæƒ¯æ€§å¯¼èˆªç³»ç»Ÿ
+optimizeä¼˜åŒ– æŒä¹è§‚æ€åº¦
+Key abilities å…³é”®èƒ½åŠ›
+present å‡ºç° æå‡º ç°åœ¨çš„ å½“å‰çš„
+disasterç¾éš¾ ç¾ç¥¸
+an important area of research ä¸€ä¸ªé‡è¦çš„ç ”ç©¶é¢†åŸŸ
+advance æ¨åŠ¨ å‰è¿› æå‰çš„
+advanced é«˜çº§çš„
+refactor é‡æ„
+parameterå‚æ•°
 issue problem publish
-degraded ±»½µ¼¶ ½µ¼¶ ÍË»¯ ±áµÍ
-middlewareÖĞ¼ä¼ş
-steady ÎÈ¶¨µÄ ²»¶ÏµÄ
+degraded è¢«é™çº§ é™çº§ é€€åŒ– è´¬ä½
+middlewareä¸­é—´ä»¶
+steady ç¨³å®šçš„ ä¸æ–­çš„
+conflict å†²çª æŠµåˆ¶ çŸ›ç›¾
+suite å¥—è£… å®¶å…·
+primitive åŸå§‹çš„ç²—è¶…çš„ ç®€å•çš„
+consist of ç”±ã€‚ã€‚ã€‚ç»„æˆ
+additional é™„åŠ çš„ é¢å¤–çš„
+track è¿½è¸ª è·Ÿè¸ª

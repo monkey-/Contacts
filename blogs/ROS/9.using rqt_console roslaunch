@@ -1,0 +1,162 @@
+前言：本教程介绍ROS调试中的rqt_console和rqt_logger_level以及一次启动多个节点的roslaunch。如果你在使用ROS fuerte或者更早的版本，rqt不是完全可用的，请查看[http://wiki.ros.org/ROS/Tutorials/UsingRxconsoleRoslaunch]，使用来的rx基础工具。
+
+###1.rqt和turtlesim包的前置需求
+
+本教程使用了rqt和turtlesim包。使用本教程需要安装2个包。如果没有安装过。执行：
+```
+$ sudo apt-get install ros-<distro>-rqt ros-<distro>-rqt-common-plugins ros-<distro>-turtlesim
+
+用你使用的ROS版本名称替换<distro> (比如：indigo, jade, kinetic).
+```
+注意：你可能已经在之前的某一个教程构建过rqt和turtlesim。如果你不确定的话，重新安装过一遍也无伤大雅。
+
+###2.使用rqt_console和rqt_logger_level
+
+rqt_console连接了ROS的日志框架，它显示了节点的输出信息。rqt_logger_level允许我们改变运行的节点繁琐的等级（DEBUG、WARN、INFO、ERROR）。
+
+现在我们来看看turtlesim在rqt_console上的输出以及改变使用的turtlesim的时候rqt_logger_level里的日志等级。在开启turtlesim之前，首先在两个新的命令行窗口中开启rqt_console和rqt_logger_level：
+```
+$ rosrun rqt_console rqt_console
+
+$ rosrun rqt_logger_level rqt_logger_level
+```
+你将看到两个悬浮窗:
+![](http://wiki.ros.org/ROS/Tutorials/UsingRqtconsoleRoslaunch?action=AttachFile&do=get&target=rqt_console%28start%29.png)
+
+![](http://wiki.ros.org/ROS/Tutorials/UsingRqtconsoleRoslaunch?action=AttachFile&do=get&target=rqt_logger_level.png)
+
+现在我们可以开启一个新的命令行窗口：
+```
+$ rosrun turtlesim turtlesim_node
+```
+
+因为默认的logger等级是INFO，所以你将看到turtlesim启动之后发布的任意消息，类似下面图片中看到的：
+![](http://wiki.ros.org/ROS/Tutorials/UsingRqtconsoleRoslaunch?action=AttachFile&do=get&target=rqt_console%28turtlesimstart%29.png)
+现在让我们改变logger的等级到WARN，然后在rqt_logger_level窗口刷新节点，如下：
+![](http://wiki.ros.org/ROS/Tutorials/UsingRqtconsoleRoslaunch?action=AttachFile&do=get&target=rqt_logger_level%28error%29.png)
+现在让我们让小乌龟撞墙，然后看看rqt_console将会显示什么消息：
+Now let's run our turtle into the wall and see what is displayed in our rqt_console:
+
+ROS Hydro之后的版本运行：
+```
+rostopic pub /turtle1/cmd_vel geometry_msgs/Twist -r 1 -- '{linear: {x: 2.0, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}'
+```
+ROS Groovy之前的版本运行：
+```
+rostopic pub /turtle1/command_velocity turtlesim/Velocity -r 1 -- 2.0  0.0
+```
+![](http://wiki.ros.org/ROS/Tutorials/UsingRqtconsoleRoslaunch?action=AttachFile&do=get&target=rqt_console%28turtlesimerror%29.png)
+####2.1快速的学习logger的等级
+日志等级的优先级如下：
+```
+Fatal>Error>Warn>Info>Debug
+```
+Fatal是最高的优先级，Debug是最低的优先级。通过设置logger的等级，可以得到设置的优先级及以上的所有消息。例如，设置logger的等级是Warn，那么可以收到Warn，Error，Fatal的日志信息。
+
+对着turtlesim窗口点击Ctrl+C，让我们通过roslaunch来建立多个turtlesim节点和一个克隆的节点用来一个turtlesim克隆另外一个：
+
+####2.2使用roslaunch
+
+roslaunch开启在launch文件中定义的节点。
+用法:
+```
+$ roslaunch [package] [filename.launch]
+```
+首先进入我们之前创建的beginner_tutorials包：
+```
+$ roscd beginner_tutorials
+```
+如果使用roscd之后看到类似的：No such package/stack 'beginner_tutorials'，就需要像创建工作空间那篇教程一样设置环境变量：
+```
+$ cd ~/catkin_ws
+$ source devel/setup.bash
+$ roscd beginner_tutorials
+```
+创建launch文件夹：
+```
+$ mkdir launch
+$ cd launch
+```
+注意：保存launch文件的文件夹不用非要命名为launch。实际上你甚至不需要把launch文件保存在目录中。roslaunch自动的查找给定的包里面可用的launch文件。事实上，结果证明设施一个好的实践。
+
+####2.3The Launch File
+
+现在让我们创建一个launch文件，名字叫做turtlesmimic，然后复制下面的内容：
+```
+<launch>
+
+  <group ns="turtlesim1">
+    <node pkg="turtlesim" name="sim" type="turtlesim_node"/>
+  </group>
+
+  <group ns="turtlesim2">
+    <node pkg="turtlesim" name="sim" type="turtlesim_node"/>
+  </group>
+
+  <node pkg="turtlesim" name="mimic" type="mimic">
+    <remap from="input" to="turtlesim1/turtle1"/>
+    <remap from="output" to="turtlesim2/turtle1"/>
+  </node>
+
+</launch>
+```
+####2.4launch文件的说明
+
+现在，让我们来分解launch的xml文件。
+```
+<launch>
+```
+launch标签表示launch文件的开始，这意味着文件是一个launch文件。
+```
+ <group ns="turtlesim1">
+    <node pkg="turtlesim" name="sim" type="turtlesim_node"/>
+  </group>
+
+  <group ns="turtlesim2">
+    <node pkg="turtlesim" name="sim" type="turtlesim_node"/>
+  </group>
+```
+这里定义了2个组各有一个namespace标签，值是turtlesim1和turtlesim2，以及一个turtlesim节点，值是sim。这允许我们开启2个仿真器并能避免名称冲突。
+```
+  <node pkg="turtlesim" name="mimic" type="mimic">
+    <remap from="input" to="turtlesim1/turtle1"/>
+    <remap from="output" to="turtlesim2/turtle1"/>
+  </node>
+```
+这里开启mimic节点，并具有重命名为turtlesim1和turtlesim2的input和output主题。重命名将导致turtlesim2克隆turtlesim1.
+```
+<launch>
+```
+launch文件的结束标签。
+
+####2.5roslaunching
+
+现在我们通过roslaunch运行launch文件:
+```
+$ roslaunch beginner_tutorials turtlemimic.launch
+```
+两个turtlesim窗口将被启动，新建一个新的命令行窗口发送rostopic命令：
+
+对于ROS Hydro及其之后的版本,
+```
+$ rostopic pub /turtlesim1/turtle1/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'
+```
+对于ROS Groovy及其之前的版本，
+```
+$ rostopic pub /turtlesim1/turtle1/command_velocity turtlesim/Velocity -r 1 -- 2.0  -1.8
+```
+我们可以看到2个turtlesim窗口里面的小乌龟在移动，尽管我们只发不了消息到turtlesim1.
+![](http://wiki.ros.org/ROS/Tutorials/UsingRqtconsoleRoslaunch?action=AttachFile&do=get&target=mimic.png)
+
+我们也可以使用rqt_graph来更好的理解上面的launch文件做了什么。运行rqt，然后在主界面的Plugins中选择Node Graph:
+```
+$ rqt
+```
+或者直接运行：
+```
+$ rqt_graph
+```
+
+![](http://wiki.ros.org/ROS/Tutorials/UsingRqtconsoleRoslaunch?action=AttachFile&do=get&target=mimiclaunch.jpg)
+
+现在我们已经成功的使用了rat_console和roslaunch，让我们来学习ROS编辑选项。使用ctrl+c停止所有的turtlesim，接下来的教程不需要使用到这些。

@@ -1,0 +1,53 @@
+#####1.Using rosed
+rosed是rosbash命令集的一部分。它允许你直接编辑包中的文件，而仅仅只需要使用包名而不是完整的包的路径。
+用法：
+```
+$ rosed [package_name] [filename]
+```
+例如：
+```
+$ rosed roscpp Logger.msg
+```
+这个例子举例说明了如何编辑roscpp包中的Logger.msg文件。
+如果中间出现错误，那很有可能是没有安装vim编辑器。
+如果文件名称在包内是不唯一的，那么会显示一个菜单让你来选择你可能需要编辑的文件。
+
+####2.使用tab补全
+
+这种方式你可以很简单的看到并从包里的所有文件中选择要编辑的文件，而不需要知道它具体的名字。
+用法:
+```
+$ rosed [package_name] <tab><tab>
+```
+例如:
+```
+$ rosed roscpp <tab><tab>
+Empty.srv                   package.xml
+GetLoggers.srv              roscpp-msg-extras.cmake
+Logger.msg                  roscpp-msg-paths.cmake
+SetLoggerLevel.srv          roscpp.cmake
+genmsg_cpp.py               roscppConfig-version.cmake
+gensrv_cpp.py               roscppConfig.cmake
+msg_gen.py   
+```               
+####3.Editor
+
+rosed命令的默认编辑器是vim。Ubuntu默认安装了nano编辑器。你可以通过编辑你的～/.bashrc文件包含它，之后就可以使用它了：
+```
+export EDITOR='nano -w'
+```
+要使用emacs作为默认的编辑器，执行:
+```
+export EDITOR='emacs -nw'
+```
+注意：.bashrc的修改只会影响新的终端。已经打开的终端不会看到新的环境变量。
+
+打开一个新的终端来查看EDITOR是否被定义：
+```
+$ echo $EDITOR
+```
+可以看到输出为：
+nano -w
+或者
+emacs -nw
+现在已经成功的配置和使用rosed了，下面将学习Msg和Srv。
