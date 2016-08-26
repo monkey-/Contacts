@@ -1,0 +1,150 @@
+1.创建工作目录：
+mkdir -p ~/temp_ws/src
+cd ~/temp_ws/src
+
+
+2.初始化工作目录：
+
+catkin_init_workspace
+
+结果：
+Creating symlink "/home/ruben/temp_ws/src/CMakeLists.txt" pointing to "/opt/ros/indigo/share/catkin/cmake/toplevel.cmake"
+产生一个符号连接指向/opt/ros/indigo/share/catkin/cmake/toplevel.cmake；
+3.创建beginner_tutorials包
+运行：catkin_create_pkg beginner_tutorials std_msg rospy roscpp
+
+结果：
+Created file beginner_tutorials/CMakeLists.txt
+Created file beginner_tutorials/package.xml
+Created folder beginner_tutorials/include/beginner_tutorials
+Created folder beginner_tutorials/src
+Successfully created files in /home/ruben/temp_ws/src/beginner_tutorials. Please adjust the values in package.xml.
+
+4.编译：运行catkin_make:
+Base path: /home/ruben/temp_ws
+Source space: /home/ruben/temp_ws/src
+Build space: /home/ruben/temp_ws/build
+Devel space: /home/ruben/temp_ws/devel
+Install space: /home/ruben/temp_ws/install
+####
+#### Running command: "make cmake_check_build_system" in "/home/ruben/temp_ws/build"
+####
+-- Using CATKIN_DEVEL_PREFIX: /home/ruben/temp_ws/devel
+-- Using CMAKE_PREFIX_PATH: /opt/ros/indigo
+-- This workspace overlays: /opt/ros/indigo
+-- Using PYTHON_EXECUTABLE: /usr/bin/python
+-- Using Debian Python package layout
+-- Using empy: /usr/bin/empy
+-- Using CATKIN_ENABLE_TESTING: ON
+-- Call enable_testing()
+-- Using CATKIN_TEST_RESULTS_DIR: /home/ruben/temp_ws/build/test_results
+-- Found gtest sources under '/usr/src/gtest': gtests will be built
+-- Using Python nosetests: /usr/bin/nosetests-2.7
+-- catkin 0.6.18
+-- BUILD_SHARED_LIBS is on
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- ~~  traversing 1 packages in topological order:
+-- ~~  - beginner_tutorials
+-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-- +++ processing catkin package: 'beginner_tutorials'
+-- ==> add_subdirectory(beginner_tutorials)
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/ruben/temp_ws/build
+####
+#### Running command: "make -j4 -l4" in "/home/ruben/temp_ws/build"
+####
+
+
+5.运行roscore，打开一个新的命令行窗口：
+
+
+6.运行rosnode list
+输出：
+/rosout
+
+7.运行rosnode info /rosout
+输出：
+--------------------------------------------------------------------------------
+Node [/rosout]
+Publications: 
+ * /rosout_agg [rosgraph_msgs/Log]
+
+Subscriptions: 
+ * /rosout [unknown type]
+
+Services: 
+ * /rosout/set_logger_level
+ * /rosout/get_loggers
+
+
+contacting node http://rubendevice:44374/ ...
+Pid: 10076
+
+8.依次运行：
+rosrun turtlesim turtlesim_node启动turtlesim节点
+rosrun turtlesim turtle_teleop_key启动键盘控制
+rosrun rqt_graph rqt_graph运行图形界面查看节点的运行状态
+rosrun rqt_plot rqt_plot查看波形图
+使用：
+rostopic list -v查看所有的主题和订阅情况
+rostopic echo [name]查看主题的输出信息
+rostopic info [name]查看主题的信息，包括发布的数据类型，订阅自哪里，发布给谁；
+rosmsg show [type]用来查看数据类型的具体属性
+rostopic type [type]用来查看主题发布何种消息类型
+
+rosservice list查看所有的服务
+rosservice type [name]查看服务的输出的消息类型
+rosservice info [name]查看服务的具体信息，包括所属节点，URI，数据类型，参数列表
+
+
+
+
+
+
+
+
+
+
+msg和srv
+
+
+1.执行：
+cd ~/temp_ws/src/beginner_tutorials
+mkdir msg
+echo "int64 num" > msg/Num.msg
+
+mkdir srv
+roscp rospy_tutorials AddTwoInts.srv srv/AddTwoInts.srv
+
+vim package.xml
+add:
+  <build_depend>message_generation</build_depend>
+  <run_depend>message_runtime</run_depend>
+
+vim CMakeList.txt
+modified:
+catkin_package(
+  ...
+  CATKIN_DEPENDS message_runtime ...
+  ...)
+
+add_message_files(
+  FILES
+  Num.msg
+)
+
+add_service_files(
+  FILES
+  AddTwoInts.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+2.根目录运行：
+catkin_make install
+
+
