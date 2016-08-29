@@ -1,0 +1,134 @@
+####1.记录数据（创建bag文件）
+
+本教程将指导如何记录正在ROS系统中运行的主题的数据。主题的数据将保存在bag文件中。
+首先，执行以下命令：
+```
+roscore
+rosrun turtlesim turtlesim_node 
+rosrun turtlesim turtle_teleop_key
+```
+上述命令将启动2个节点，turtlesim仿真窗口和键盘方向控制窗口。如果你选择启动turtle_keyboard的窗口，可以看到下面的内容：
+```
+Reading from keyboard
+---------------------------
+Use arrow keys to move the turtle.
+```
+在turtle_keyboard窗口按下方向键将看到小乌龟在移动。注意要选择键盘控制的窗口。
+#####1.1记录所有的主题
+
+首先检查下当前系统已经发布的主题有那些。执行：
+```
+rostopic list -v
+```
+可以看到下面的内容：
+```
+Published topics:
+ * /turtle1/color_sensor [turtlesim/Color] 1 publisher
+ * /turtle1/cmd_vel [geometry_msgs/Twist] 1 publisher
+ * /rosout [rosgraph_msgs/Log] 2 publishers
+ * /rosout_agg [rosgraph_msgs/Log] 1 publisher
+ * /turtle1/pose [turtlesim/Pose] 1 publisher
+
+Subscribed topics:
+ * /turtle1/cmd_vel [geometry_msgs/Twist] 1 subscriber
+ * /rosout [rosgraph_msgs/Log] 1 subscriber
+```
+列出来的已发布的主题是仅有的潜在的能被记录到数据日志文件的数据类型，同时发布的数据也会记录。teleop_turtle发布的/turtle1/cmd_vel命令数据是作为turtlesim进程的输入。/turtle1/color_sensor和/turtle1/pose是turtlesim输出的数据。
+现在，我们将记录发布的数据。打开一个新的命令行窗口。执行：
+```
+mkdir ~/bagfiles
+cd ~/bagfiles
+rosbag record -a
+```
+这里我们这是创建了一个临时的目录用来保存数据，然后运行rosbag record -a，-a表示保存所有的已发布的主题的数据到一个bag文件里。
+
+返回turtle_teleop窗口，移动小乌龟10S左右。
+
+在运行rosbag的窗口按下ctrl+c。现在，检查下～/bagfiles目录下的内容。你可以看到一个以年、数据、时间、后缀为.bag为名字的文件。这个文件保存了rosbag record执行期间所有已任意节点发布主题的数据。
+
+####2.检验和播放bag文件
+
+前文通过rosbag record命令已经将数据保存到了bag文件，现在我们通过rosbag info和rosbag play文件来检查和回放数据。首先查看bag文件保存了什么。可以使用rosbag info来查看，这个命令将检查bag文件的内容而不用回放。在bag文件的目录下执行：
+```
+rosbag info <bag文件名>
+```
+
+可以看到类似的信息：
+```
+path:        2014-12-10-20-08-34.bag
+version:     2.0
+duration:    1:38s (98s)
+start:       Dec 10 2014 20:08:35.83 (1418270915.83)
+end:         Dec 10 2014 20:10:14.38 (1418271014.38)
+size:        865.0 KB
+messages:    12471
+compression: none [1/1 chunks]
+types:       geometry_msgs/Twist [9f195f881246fdfa2798d1d3eebca84a]
+             rosgraph_msgs/Log   [acffd30cd6b6de30f120938c17c593fb]
+             turtlesim/Color     [353891e354491c51aabe32df673fb446]
+             turtlesim/Pose      [863b248d5016ca62ea2e895ae5265cf9]
+topics:      /rosout                    4 msgs    : rosgraph_msgs/Log   (2 connections)
+             /turtle1/cmd_vel         169 msgs    : geometry_msgs/Twist
+             /turtle1/color_sensor   6149 msgs    : turtlesim/Color    
+             /turtle1/pose           6149 msgs    : turtlesim/Pose
+```
+
+上面显示了主题的名字，类型，以及包含在bag文件中的每一种消息的数目。我们可以看到在rostopic输出里广播的主题，五分之四的主题在我们记录间隔里实际发布。通过rosbag record -a命令将记录所有节点发布的所有消息。
+
+接下来的教程将回放bag文件，重现系统运行时的行为。首先你停止turtle_teleop窗口，保持turtlesim窗口运行。在命令行窗口，在bag文件的目录下运行：
+```
+rosbag play <your bagfile>
+```
+可以看到类似：
+```
+[ INFO] [1418271315.162885976]: Opening 2014-12-10-20-08-34.bag
+
+Waiting 0.2 seconds after advertising topics... done.
+
+Hit space to toggle paused, or 's' to step.
+```
+rosbag play的默认模式下将等待0.2秒之后才开始播放bag文件的内容。等待的这一段时间允许消息的任意订阅者提示接下来将发布的消息以及接下来的具体的消息。如果rosbag play立马发布消息，订阅将收不到一开始发布的消息。具体要等待多久可以通过-d选项来设置。
+最终，回放的效果跟实际通过鼠标控制的效果是一样的。也可以通过-s选项来选择开始播放的时间点。-r选项是选择播放的速度：
+```
+rosbag play -r 2 <your bagfile>
+```
+可以看到运行的效果跟之前的不一样，这是因为回放是以2倍的速度去点击键盘的。
+
+####3.保存数据的子集
+
+当运行复杂系统的时候，比如pr2软件集，将有成百的主题发布。对于一些主题，比如摄像头图片流，有可能发布大量的数据。这样的系统写入所有主题的日志文件到一个单独的bag文件是不可行的。rosbag record命令支持部分主题的日志输出，仅仅只记录用户关注的主题。
+执行：
+```
+rosrun turtlesim turtlesim_node 
+rosrun turtlesim turtle_teleop_key
+```
+在bag文件的目录下执行：
+```
+rosbag record -O subset /turtle1/cmd_vel /turtle1/pose
+```
+-O选项指定保存日志到subset.bag文件，topic参数
+The -O argument tells rosbag record to log to a file named subset.bag, and the topic arguments cause rosbag record to only subscribe to these two topics. Move the turtle around for several seconds using the keyboard arrow commands, and then Ctrl-C the rosbag record.
+
+Now check the contents of the bag file (rosbag info subset.bag). You should see something like this, with only the indicated topics:
+
+```
+path:        subset.bag
+version:     2.0
+duration:    12.6s
+start:       Dec 10 2014 20:20:49.45 (1418271649.45)
+end:         Dec 10 2014 20:21:02.07 (1418271662.07)
+size:        68.3 KB
+messages:    813
+compression: none [1/1 chunks]
+types:       geometry_msgs/Twist [9f195f881246fdfa2798d1d3eebca84a]
+             turtlesim/Pose      [863b248d5016ca62ea2e895ae5265cf9]
+topics:      /turtle1/cmd_vel    23 msgs    : geometry_msgs/Twist
+             /turtle1/pose      790 msgs    : turtlesim/Pose
+```
+####4.The limitations of rosbag record/play
+In the previous section you may have noted that the turtle's path may not have exactly mapped to the original keyboard input - the rough shape should have been the same, but the turtle may not have exactly tracked the same path. The reason for this is that the path tracked by turtlesim is very sensitive to small changes in timing in the system, and rosbag is limited in its ability to exactly duplicate the behavior of a running system in terms of when messages are recorded and processed by rosrecord, and when messages are produced and processed when using rosplay. For nodes like turtlesim, where minor timing changes in when command messages are processed can subtly alter behavior, the user should not expect perfectly mimicked behavior.
+
+
+
+
+Now that you've learned how to record and play back data, let's learn how to troubleshoot with roswtf.

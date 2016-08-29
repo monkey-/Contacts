@@ -107,3 +107,8 @@ pollute 污染 败坏
 steer 掌舵 控制 驾驶
 chassis 底盘 底架
 robustness鲁棒性
+instruct 通知 命令 指导
+accumulate 累计 累积
+yield产生 屈服 产量 收益
+actually 实际上 
+interval 间隔
