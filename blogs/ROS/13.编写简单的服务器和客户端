@@ -1,0 +1,180 @@
+####1.编写服务节点
+
+这里我们创建一个叫“add_two_ints_server”的服务节点，它的功能是完成对两个数的相加，并返回和。进入前面教程创建的beginner_tutorials包的目录：
+```
+cd ~/catkin_ws/src/beginner_tutorials
+```
+查看前文创建的/srv/AddTwoInts.srv是否存在。
+
+
+#####1.1代码：
+
+创建文件src/add_two_ints_server.cpp，拷贝下面的内容：
+```
+#include "ros/ros.h"
+#include "beginner_tutorials/AddTwoInts.h"
+
+bool add(beginner_tutorials::AddTwoInts::Request  &req,
+         beginner_tutorials::AddTwoInts::Response &res)
+{
+  res.sum = req.a + req.b;
+  ROS_INFO("request: x=%ld, y=%ld", (long int)req.a, (long int)req.b);
+  ROS_INFO("sending back response: [%ld]", (long int)res.sum);
+  return true;
+}
+
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "add_two_ints_server");
+  ros::NodeHandle n;
+
+  ros::ServiceServer service = n.advertiseService("add_two_ints", add);
+  ROS_INFO("Ready to add two ints.");
+  ros::spin();
+
+  return 0;
+}
+```
+
+#####1.2代码解析：
+```
+#include "ros/ros.h"
+#include "beginner_tutorials/AddTwoInts.h"
+```
+添加上一个教程生成的beginner_tutorials/AddTwoInts.h头文件。
+
+```
+bool add(beginner_tutorials::AddTwoInts::Request  &req,
+         beginner_tutorials::AddTwoInts::Response &res)
+```
+
+这个方法提供求两个整型数和的服务，它接收srv文件中定义的请求和应答类型并返回布尔类型。
+
+```
+{
+  res.sum = req.a + req.b;
+  ROS_INFO("request: x=%ld, y=%ld", (long int)req.a, (long int)req.b);
+  ROS_INFO("sending back response: [%ld]", (long int)res.sum);
+  return true;
+}
+```
+
+这里将2个整型数相加并把结果保存应答里面。然后打印出了请求和应答的日志。完成上述工作，最后服务返回true。
+```
+ ros::ServiceServer service = n.advertiseService("add_two_ints", add);
+```
+
+以上，介绍了如何创建服务并在ROS里注册。
+
+####2.创建服务节点
+
+#####2.1代码
+
+创建src/add_two_ints_client.cpp，拷贝如下代码：
+```
+#include "ros/ros.h"
+#include "beginner_tutorials/AddTwoInts.h"
+#include <cstdlib>
+
+int main(int argc, char **argv)
+{
+  ros::init(argc, argv, "add_two_ints_client");
+  if (argc != 3)
+  {
+    ROS_INFO("usage: add_two_ints_client X Y");
+    return 1;
+  }
+
+  ros::NodeHandle n;
+  ros::ServiceClient client = n.serviceClient<beginner_tutorials::AddTwoInts>("add_two_ints");
+  beginner_tutorials::AddTwoInts srv;
+  srv.request.a = atoll(argv[1]);
+  srv.request.b = atoll(argv[2]);
+  if (client.call(srv))
+  {
+    ROS_INFO("Sum: %ld", (long int)srv.response.sum);
+  }
+  else
+  {
+    ROS_ERROR("Failed to call service add_two_ints");
+    return 1;
+  }
+
+  return 0;
+}
+```
+#####2.2代码解释：
+
+```
+ ros::ServiceClient client = n.serviceClient<beginner_tutorials::AddTwoInts>("add_two_ints");
+```
+
+向add_two_ints服务注册一个客户端。这个ros::ServiceClient对象将在接下来调用上文创建的服务。
+
+```
+  beginner_tutorials::AddTwoInts srv;
+  srv.request.a = atoll(argv[1]);
+  srv.request.b = atoll(argv[2]);
+```
+
+这里实例化自动生成的服务类，分配值到对应的参数。服务类包含两个参数，请求和应答，同时也包含了2个类的定义：Request和Response。
+```
+  if (client.call(srv))
+```
+
+这里调用了服务。在服务阻塞之前，一旦调用结束，它将返回。如果调用成功，call()将返回true并且srv.response的值也是合法的。如果调用不成功，call()将返回false并且srv.response的值是非法的。
+
+####3.构建代码：
+
+
+编辑~/catkin_ws/src/beginner_tutorials/CMakeLists.txt，在文件的末尾添加下面的内容：
+```
+add_executable(add_two_ints_server src/add_two_ints_server.cpp)
+target_link_libraries(add_two_ints_server ${catkin_LIBRARIES})
+add_dependencies(add_two_ints_server beginner_tutorials_gencpp)
+
+add_executable(add_two_ints_client src/add_two_ints_client.cpp)
+target_link_libraries(add_two_ints_client ${catkin_LIBRARIES})
+add_dependencies(add_two_ints_client beginner_tutorials_gencpp)
+```
+
+This will create two executables, add_two_ints_server and add_two_ints_client, which by default will go into package directory of your devel space, located by default at ~/catkin_ws/devel/lib/<package name>. You can invoke executables directly or you can use rosrun to invoke them. They are not placed in '<prefix>/bin' because that would pollute the PATH when installing your package to the system. If you wish for your executable to be on the PATH at installation time, you can setup an install target, see: catkin/CMakeLists.txt
+
+For more detailed description of the CMakeLists.txt file see: catkin/CMakeLists.txt
+
+Now run catkin_make:
+这将创建2个可执行程序，add_two_ints_server和add_two_ints_client.默认将进入包的根目录的devel文件夹，devel文件夹的路径默认是~/catkin_ws/devel/lib/<package name>。
+可以直接的调用程序或者使用rosru调用。它们不在<prefix>/bin目录，因为这将会使得在系统中安装你的包的时候破坏PATH。如果希望这些可执行文件安装的时候在PATH路径。你可以修改：catkin/CMakeLists.txt。
+更多的详细描述关于CMakeList文件，参看：http://wiki.ros.org/catkin/CMakeLists.txt
+```
+# In your catkin workspace
+cd ~/catkin_ws
+catkin_make
+```
+If your build fails for some reason:
+如果构建失败，可能的解决办法：确定是真的按照前文的教程操作了，比如创建了srv/AddTwoInts.srv文件见。
+
+####4.测试：
+
+执行：
+```
+rosrun beginner_tutorials add_two_ints_server 
+```
+可以看到：
+```
+Ready to add two ints.
+```
+
+执行：
+```
+rosrun beginner_tutorials add_two_ints_client 1 3
+```
+可以看到：
+```
+Requesting 1+3
+1 + 3 = 4
+```
+
+到这里就完成了对服务端和客户端的编写。
+
+更多的关于客户端和服务端的编写查看：https://github.com/fairlight1337/ros_service_examples/

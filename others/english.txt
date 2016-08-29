@@ -101,3 +101,9 @@ kick off 踢开 开始（口语）
 condensed浓缩的
 what is going on 发生了什么
 receipt 收到 收据 收入
+assign 分配
+invoke 调用
+pollute 污染 败坏
+steer 掌舵 控制 驾驶
+chassis 底盘 底架
+robustness鲁棒性
