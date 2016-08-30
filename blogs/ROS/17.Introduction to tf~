@@ -1,0 +1,121 @@
+
+####前言
+本文介绍了tf的功能，并使用turtlesim示例了多个机器人例子展示tf的能力。同时，本文也介绍了tf_echo,view_frames,rqt_tf_tree和rviz。
+
+
+####1.建立Demo
+本教程使用到的节点的ubuntu版本已经发布，只需要运行：
+```
+sudo apt-get install ros-indigo-ros-tutorials ros-indigo-geometry-tutorials ros-indigo-rviz ros-indigo-rosbash ros-indigo-rqt-tf-tree
+```
+
+####2.运行Demo
+
+运行：
+```
+roslaunch turtle_tf turtle_tf_demo.launch
+```
+即可打开程序界面，如下：
+![](http://wiki.ros.org/tf/Tutorials/Introduction%20to%20tf?action=AttachFile&do=get&target=turtle_tf_start.png)
+
+如果运行的途中出现程序停止的问题，参考：http://answers.ros.org/question/45251/turtle_pointer-6-process-has-died-when-running-tf-tutorial/
+
+一旦turtlesim窗口打开之后，可是点击方向按键让小乌龟到处移动，点击按键的时候注意选择turtlesim窗口，可以看到如下界面：
+![](http://wiki.ros.org/tf/Tutorials/Introduction%20to%20tf?action=AttachFile&do=get&target=turtle_tf_drive.png)
+
+可以看到，在点击方向键让小乌龟到处移动的同时，另一只小乌龟会连续的跟着它移动。
+
+####3.发生了什么
+
+上述demo使用tf库创建了3个坐标系：世界系，乌龟1系，乌龟2系。本教程使用tf broadcaster来发布乌龟坐标系，使用tf listener计算乌龟坐标系的不同，然后驱动一只乌龟跟随另一只移动。
+
+####4.tf工具
+接下来看看上述demo如何使用tf。我们可以通过tf工具查看tf在后台做了什么。
+
+#####4.1使用view_frames
+
+view_frames创建tf通过ROS广播的各系的图表关系。执行：
+```
+rosrun tf view_frames
+```
+
+可以看到：
+```
+Listening to /tf for 5.000000 seconds
+Done Listening
+dot - graphviz version 2.36.0 (20140111.2315)
+
+Detected dot version 2.36
+frames.pdf generated
+```
+上述命令执行的tf listener监听通过ROS广播的各个系，并绘制各个系之间连接的树。如果要查看输出的树，运行：
+```
+evince frames.pdf
+```
+可以看到：
+!()[http://wiki.ros.org/tf/Tutorials/Introduction%20to%20tf?action=AttachFile&do=get&target=view_frames_2.png]
+这里我们可以看到tf广播了3个系：world，turtle1，turtle2，并且world是turtle1和turtle2的父节点。为了调试，view_frames也会上报一些诊断性的信息：关于什么时候接收到最早的和最近的体系转换和发布给tf的tf frame速度。
+
+#####4.2使用rqt_tf_tree
+
+rqt_tf_tree是一个用于通过ROS广播的坐标系的树的可视化的运行时工具。你可以简单的通过左上角的刷新按钮来刷新。
+用法：
+```
+rosrun rqt_tf_tree rqt_tf_tree
+```
+或者简单的
+```
+rqt &
+```
+然后选择Plugins标签页的rqt_tf_tree。
+!()[http://wiki.ros.org/tf/Tutorials/Introduction%20to%20tf?action=AttachFile&do=get&target=snapshot_rqt_tree_turtle_tf.png]
+
+#####4.3使用tf_echo
+tf_echo上报的是通过ROS广播的任意两个坐标系之间的转换。
+用法：
+```
+rosrun tf tf_echo [reference_frame] [target_frame]
+```
+让我们来看看turtle2和turtle1坐标系之间的转换等同于：
+!()[http://wiki.ros.org/tf/Tutorials/Introduction%20to%20tf?action=AttachFile&do=get&target=latex_986fed48f3e5bc349f7ca256812c18ebe46a588b_p1.png]
+
+执行：
+```
+rosrun tf tf_echo turtle1 turtle2
+```
+可以看到tf_echo监听器显示了通过ROS广播的坐标系的转换的过程。
+```
+At time 1416409795.450
+- Translation: [0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.914, 0.405]
+            in RPY [0.000, -0.000, 2.308]
+At time 1416409796.441
+- Translation: [0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.914, 0.405]
+            in RPY [0.000, -0.000, 2.308]
+At time 1416409797.450
+- Translation: [0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.914, 0.405]
+            in RPY [0.000, -0.000, 2.308]
+At time 1416409798.441
+- Translation: [0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.914, 0.405]
+            in RPY [0.000, -0.000, 2.308]
+At time 1416409799.433
+- Translation: [0.000, 0.000, 0.000]
+- Rotation: in Quaternion [0.000, 0.000, 0.691, 0.723]
+            in RPY [0.000, -0.000, 1.526]
+```
+####5.rviz和tf
+
+rviz是一个非常有效的用户检查tf坐标系的可视化工具。接下来将从rviz中查看小乌龟的坐标系。运行：
+```
+rosrun rviz rviz -d `rospack find turtle_tf`/rviz/turtle_rviz.rviz
+```
+
+!()[http://wiki.ros.org/tf/Tutorials/Introduction%20to%20tf?action=AttachFile&do=get&target=turtle_tf_rviz.png]
+
+从rviz中可以看到tf广播的各个坐标系。当驱动小乌龟运动的时候，可以看到rviz中的坐标系也随着运动。
+
+
+
