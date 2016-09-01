@@ -1,0 +1,36 @@
+Description: This tutorial describes some tips for writing roslaunch files for large projects. The focus is on how to structure launch files so they may be reused as much as possible in different situations. We'll use the 2dnav_pr2 package as a case study.
+
+####前言
+本教程描述的是为大工程编写launch文件的一些小贴士。本文关注如何构造launch文件可以在不同情景下应用。本文使用2dnav_pr2包来学习。
+
+####1.介绍
+
+机器人大的应用程序通常包含多个内部连接的节点，每一个节点都会有多个参数。2d导航就是一个好的例子。2dnav_pr2应用程序由move_base节点、定位、地面过滤、底盘控制器和map server。同样的，有几百个ROS参数影响这些节点的行为。最有，也有一些约束比如地面过滤只能运行在相同的机器相同的倾斜激光上才会有效率。
+
+给定一个正在运行的机器人，开启2dnav_pr2包中的2dnav_pr2.launch文件将建立机器人导航所需要的每一个条件。本教程，我们将检查launch文件以及使用的大量特性。
+
+我们同样的让launch文件尽可能的是可用的，这样在物理上相同的机器人之间的代码可以不用更改而相互使用。就算是从机器人到仿真器之间的迁移也只是需要做少许的更改。接下来我们将查看launch文件如何构造实现这种可能性。
+
+####2.顶层结构
+
+下面显示一个顶层launch文件（rospack find 2dnav_pr2/move_nase/2dnav_pr2.launch）:
+
+```
+<launch>
+  <group name="wg">
+    <include file="$(find pr2_alpha)/$(env ROBOT).machine" />
+    <include file="$(find 2dnav_pr2)/config/new_amcl_node.xml" />
+    <include file="$(find 2dnav_pr2)/config/base_odom_teleop.xml" />
+    <include file="$(find 2dnav_pr2)/config/lasers_and_filters.xml" />
+    <include file="$(find 2dnav_pr2)/config/map_server.xml" />
+    <include file="$(find 2dnav_pr2)/config/ground_plane.xml" />
+
+    <!-- The navigation stack and associated parameters -->
+    <include file="$(find 2dnav_pr2)/move_base/move_base.xml" />
+  </group>
+</launch>
+```
+
+上述文件包含了很多其他的文件。每一个被包含的文件包含了作为系统一部分的很多节点和参数（还有很多是内部包含），比如定位、传感器处理、路径规划。
+
+
