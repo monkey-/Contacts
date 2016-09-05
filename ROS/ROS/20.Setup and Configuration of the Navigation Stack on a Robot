@@ -1,0 +1,184 @@
+
+####前言
+本文一步步的介绍如何在运行的机器人上一步步实现导航。包含的主题包括：发送坐标转换的tf，发布里里程计信息，通过ROS发布激光传感器数据和基本的导航包配置。
+
+####1.机器人建立
+
+!()[http://wiki.ros.org/navigation/Tutorials/RobotSetup?action=AttachFile&do=get&target=overview_tf_small.png]
+
+导航包假设已经部分配置好能够跑动。上面的图解展示了这个配置。白色的组件是必须的组件，并且已经实现了；灰色的组件是可选的组件，并且也已经实现了；蓝色的组件是必须为每一个具体的机器人平台创建的。导航包的预需求部分（以及说明如何满足每一个需求）在下文中提供。
+
+#####1.1ROS
+
+The navigation stack assumes that the robot is using ROS. Please consult the ROS documentation for instructions on how to install ROS on your robot.
+
+导航包默认机器人使用ROS，关于如何安装在机器人上安装ROS需要查找ROS文档。
+
+#####1.2.转换配置 (其他平台)
+
+The navigation stack requires that the robot be publishing information about the relationships between coordinate frames using tf. A detailed tutorial on setting up this configuration can be found here: Transform Configuration.
+导航报需要机器人发布使用tf转换后的坐标系之间关系的信息。关于如何建立这种配置的详细教程参考：http://wiki.ros.org/navigation/Tutorials/RobotSetup/TF
+
+#####1.3.传感器信息 (源自传感器)
+
+导航包使用传感器收集的信息进行避障，假设这些传感器通过ROS发布sensor_msgs/LaserScan或者sensor_msgs/PointCloud信息。关于通过ROS发布的这些信息，参考：http://wiki.ros.org/navigation/Tutorials/RobotSetup/Sensors。当然了，已经有一部分传感器已经有了ROS驱动包含了这一步骤。已支持的传感器和相关的驱动链接如下：
+######SCIP2.2-compliant Hokuyo Laser Devices as well as the Hokuyo Model 04LX, 30LX - urg_node（http://wiki.ros.org/urg_node）
+######SICK LMS2xx Lasers - sicktoolbox_wrapper（http://wiki.ros.org/sicktoolbox_wrapper）
+
+#####1.4.里程信息 (来自里程计)
+
+导航包需要使用tf和nav_msgs/Odometry信息发布的里程计信息。关于通过ROS发布里程计信息的教程参考：http://wiki.ros.org/navigation/Tutorials/RobotSetup/Odom。支持里程计的平台和链接参考：
+######Videre Erratic: erratic_player（http://wiki.ros.org/erratic_player）
+######PR2: pr2_mechanism_controllers（http://wiki.ros.org/pr2_mechanism_controllers）
+
+#####1.5.底盘控制
+
+导航包假设 它可以使用"cmd_vel"主题上发布的在底盘坐标系上的geometry_msgs/Twist消息发布速度命令。这意味着必须有一个节点订阅“cmd_vel”主题，“cmd_vel”能公布(vx, vy, vtheta) <==> (cmd_vel.linear.x, cmd_vel.linear.y, cmd_vel.angular.z)速度以及转换他们为运动命令并发送到移动底盘。支持底盘控制平台以及相关驱动的链接如下：
+######Videre Erratic: erratic_player
+######PR2: pr2_mechanism_controllers
+
+#####1.6.建图(map_server)
+
+导航包需要地图用来操作，但是在本教程假设已经有了一个地图。关于详细的如何在具体环境中创建地图参考：http://wiki.ros.org/slam_gmapping/Tutorials/MappingFromLoggedData。
+
+
+####2.导航包的建立
+
+This section describes how to setup and configure the navigation stack on a robot. It assumes that all the requirements above for robot setup have been satisfied. Specifically, this means that the robot must be publishing coordinate frame information using tf, receiving sensor_msgs/LaserScan or sensor_msgs/PointCloud messages from all sensors that are to be used with the navigation stack, and publishing odometry information using both tf and the nav_msgs/Odometry message while also taking in velocity commands to send to the base. If any of these requirements are not met on your robot, please see the Robot Setup section above for instructions on completing them.
+本节描述如何在机器人上建立和配置导航包。假设上文描述的建立机器人的需求已经得到满足。特别地，这也意味着机器人必须使用tf发布坐标系信息，所有传感器发布的sensor_msgs/LaserScan 或者 sensor_msgs/PointCloud将被导航包使用，使用tf和sensor_msgs.LaserScan发布的里程计信息同样通过速度命令发送到底盘。如果机器人不满足这些需求，查看上文的说明并完善。
+
+#####2.1创建package
+
+本教程的第一步就是创建一个package，我们将用它来保存导航包的所有的配置和launch文件。上述机器人建立步骤描述的满足需要的所有包的依赖对于move_base package也一样，它包含了实现导航包的高等级的接口。所以，选择package的保存位置，运行如下命令:
+```
+catkin_create_pkg my_robot_name_2dnav move_base my_tf_configuration_dep my_odom_configuration_dep my_sensor_configuration_dep
+```
+
+#####2.2.创建launch配置文件
+
+Now that we have a workspace for all of our configuration and launch files, we'll create a roslaunch file that brings up all the hardware and transform publishes that the robot needs. Fire up your favorite editor, and paste the following snippet into a file called my_robot_configuration.launch. You should, of course, feel free to replace the text "my_robot" with the name of your actual robot. We'll also have to make similar changes to the launch file as discussed below, so make sure that you read the rest of this section.
+既然我们已经有了保存配置和launch文件的工作空间，我们将创建一个roslaunch文件建立机器人需要的所有硬件和转换的发布。打开偏好的编辑器，把下面的片段复制到my_robot_configuration.launch文件中，这里可以将具体的机器人平台名字替换掉my_robot。同样的，下面也有一些类似的改变。
+```
+<launch>
+  <node pkg="sensor_node_pkg" type="sensor_node_type" name="sensor_node_name" output="screen">
+    <param name="sensor_param" value="param_value" />
+  </node>
+
+  <node pkg="odom_node_pkg" type="odom_node_type" name="odom_node" output="screen">
+    <param name="odom_param" value="param_value" />
+  </node>
+
+  <node pkg="transform_configuration_pkg" type="transform_configuration_type" name="transform_configuration_name" output="screen">
+    <param name="transform_configuration_param" value="param_value" />
+  </node>
+</launch>
+```
+Ok.. so now we have a template for a launch file, but we need to fill it in for our specific robot. We'll walk through the changes that need to be made in each section below.
+好了，现在已经有了一个launch文件的模板，现在我们需要根据具体的机器人进行填充。下文将介绍具体介绍每一个区域需要更改的内容。
+```
+<launch>
+  <node pkg="sensor_node_pkg" type="sensor_node_type" name="sensor_node_name" output="screen">
+    <param name="sensor_param" value="param_value" />
+```
+在本区域中，我们将创建任何机器人需要导航用到的传感器。用实际使用的传感器package名替换掉"sensor_node_pkg"，"sensor_node_type"是传感器驱动的类型，"sensor_node_name"是给传感器节点取的名字，"sensor_param"是给节点设置的参数。注意，如果有多传感器数据需要发送到导航包，那么必须为所有传感器建立节点。
+
+```
+  <node pkg="odom_node_pkg" type="odom_node_type" name="odom_node" output="screen">
+    <param name="odom_param" value="param_value" />
+  </node>
+```
+In this section, we'll launch the odometry for the base. Once again, you'll need to replace the pkg, type, name, and param specifications with those relevant to the node that you're actually launching.
+上述代码建立了底盘的里程计节点。代码中的pkg、type、name、param等参数根据具体的机器人平台相关。
+
+```
+  <node pkg="transform_configuration_pkg" type="transform_configuration_type" name="transform_configuration_name" output="screen">
+    <param name="transform_configuration_param" value="param_value" />
+  </node>
+```
+In this section, we'll launch the transform configuration for the robot. Once again, you'll need to replace the pkg, type, name, and param specifications with those relevant to the node that you're actually launching.
+
+上述代码创建了机器人的转换配置。代码中的参数根据具体的参数进行修改。
+
+#####2.3.Costmap Configuration (local_costmap) & (global_costmap)
+
+
+导航包使用2个costmap记录世界参考系中的障碍信息。一个用来全局路径规划，同时创建整体环境的长期规划，另一个用来局部规划和避障。有部分是两个costmap共同的配置选项，也有部分是单独的。因此，下文将有3个部分来介绍相关配置：公共配置选项，全局配置选项，局部配置选项。
+注意：下文只是介绍了一些基本的配置选项，关于更多的配置选项，参考：http://wiki.ros.org/costmap_2d。
+
+######2.3.1.Common Configuration (local_costmap) & (global_costmap)
+
+The navigation stack uses costmaps to store information about obstacles in the world. In order to do this properly, we'll need to point the costmaps at the sensor topics they should listen to for updates. Let's create a file called costmap_common_params.yaml as shown below and fill it in:
+导航包使用costmap保存世界参考系中的障碍物信息。为了正确的完成这个目标，我们需要支出在传感器主题中指出costmap用来监听更新。下面我们创建costmap_common_params.yaml文件然后复制下面的内容：
+
+```
+obstacle_range: 2.5
+raytrace_range: 3.0
+footprint: [[x0, y0], [x1, y1], ... [xn, yn]]
+#robot_radius: ir_of_robot
+inflation_radius: 0.55
+
+observation_sources: laser_scan_sensor point_cloud_sensor
+
+laser_scan_sensor: {sensor_frame: frame_name, data_type: LaserScan, topic: topic_name, marking: true, clearing: true}
+
+point_cloud_sensor: {sensor_frame: frame_name, data_type: PointCloud, topic: topic_name, marking: true, clearing: true}
+```
+接下来将详细的解析上述代码；
+```
+obstacle_range: 2.5
+raytrace_range: 3.0
+```
+
+这个参数集合给定了加进costmap中的障碍信息的阈值。"obstacle_range"决定范围传感器读取到的最大数据导致在costmap中加入障碍。这里，我们设置的是2.5米，这意味着机器人将仅仅更新costmap中的底盘的障碍信息在2.5米内。"raytrace_range"参数决定给定传感器读取的光线追踪自由空间。设置它为3米表示机器人通过给定的传感器读取的数据将尝试清除它面前的空间到3米外。
+```
+footprint: [[x0, y0], [x1, y1], ... [xn, yn]]
+#robot_radius: ir_of_robot
+inflation_radius: 0.55
+```
+Here we set either the footprint of the robot or the radius of the robot if it is circular. In the case of specifying the footprint, the center of the robot is assumed to be at (0.0, 0.0) and both clockwise and counterclockwise specifications are supported. We'll also set the inflation radius for the costmap. The inflation radius should be set to the maximum distance from obstacles at which a cost should be incurred. For example, setting the inflation radius at 0.55 meters means that the robot will treat all paths that stay 0.55 meters or more away from obstacles as having equal obstacle cost.
+这里我们设置机器人的footprint和机器人的半径（如果是圆的话）。如果要指定footprint，机器人的中心假定为(0,0,0,0)以及指定顺时针和逆时针方向都能被支持。
+```
+observation_sources: laser_scan_sensor point_cloud_sensor
+```
+"observation_sources"参数定义指令了一个传感器列表，这些传感器将传递信息给由空间分隔的costmap。每一个传感器在下面的一行代码定义。
+
+```
+laser_scan_sensor: {sensor_frame: frame_name, data_type: LaserScan, topic: topic_name, marking: true, clearing: true}
+```
+上述的一行设置observation_sources中传感器关注的参数，本示例定义了laser_scan_sensor作为示例。
+"frame_name"是传感器的坐标系的名字，"data_type"必须被设置为LaserScan或者PointCloud，取决于使用了哪种消息的的主题，"topic_name"必须设置为传感器发布数据的主题的名字。"marking" 和 "clearing"决定传感器是否被用来增加障碍信息到costmap中，从costmap清除障碍信息或者两者都是。
+
+######2.3.2.Global Configuration (global_costmap)
+
+We'll create a file below that will store configuration options specific to the global costmap. Open up an editor with the file global_costmap_params.yaml and paste in the following text:
+```
+global_costmap:
+  global_frame: /map
+  robot_base_frame: base_link
+  update_frequency: 5.0
+  static_map: true
+```
+The "global_frame" parameter defines what coordinate frame the costmap should run in, in this case, we'll choose the /map frame. The "robot_base_frame" parameter defines the coordinate frame the costmap should reference for the base of the robot. The "update_frequency" parameter determines the frequency, in Hz, at which the costmap will run its update loop. The "static_map" parameter determines whether or not the costmap should initialize itself based on a map served by the map_server. If you aren't using an existing map or map server, set the static_map parameter to false.
+
+######2.3.3.Local Configuration (local_costmap)
+
+We'll create a file below that will store configuration options specific to the local costmap. Open up an editor with the file local_costmap_params.yaml and paste in the following text:
+
+```
+local_costmap:
+  global_frame: odom
+  robot_base_frame: base_link
+  update_frequency: 5.0
+  publish_frequency: 2.0
+  static_map: false
+  rolling_window: true
+  width: 6.0
+  height: 6.0
+  resolution: 0.05
+```
+
+The "global_frame", "robot_base_frame", "update_frequency", and "static_map" parameters are the same as described in the Global Configuration section above. The "publish_frequency" parameter determines the rate, in Hz, at which the costmap will publish visualization information. Setting the "rolling_window" parameter to true means that the costmap will remain centered around the robot as the robot moves through the world. The "width," "height," and "resolution" parameters set the width (meters), height (meters), and resolution (meters/cell) of the costmap. Note that its fine for the resolution of this grid to be different than the resolution of your static map, but most of the time we tend to set them equally.
+
+######2.3.4.Full Configuration Options
+
+This minimum configuration should get things up and running, but for more details on the configuration options available for the costmap please see the costmap_2d documentation.
